@@ -1,3 +1,4 @@
+import 'package:app_transaction_manager/data_models/tran_record.dart';
 import 'package:app_transaction_manager_example/logging_client.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
@@ -20,7 +21,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void initState() {
-    manager = AppTransactionManager();
+    // manager = AppTransactionManager();
     _initWeb3();
 
     super.initState();
@@ -52,8 +53,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   void dummyFnc() async {
-    manager.addSentTransaction(
-        '0x8d16acab430733c792d431ffa17f0570df55d55ba098368c17a36c9b2bbd0a77');
+    AppTransactionManager().addSentTransaction(
+        '0x908709938c9b93d390a1394f14ab5cd5a2d8e690e7321f7b66a4249954742d7c');
   }
 
   void _initWeb3() async {
@@ -75,7 +76,11 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _readRecord() async {
-    List<dynamic> rs = await manager.readTransaction();
-    print(rs);
+    List<TransactionRecord> rs =
+        await AppTransactionManager().readTransaction();
+
+    rs.forEach((e) {
+      print(e.transactionHash);
+    });
   }
 }

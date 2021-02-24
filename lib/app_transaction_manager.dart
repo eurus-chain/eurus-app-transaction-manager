@@ -27,6 +27,8 @@ class AppTransactionManager {
       ],
     );
     _db = DatabaseStorageKit(table: table);
+    await _db.initDB();
+    return;
   }
 
   Future<bool> addSentTransaction(String hash) async {
@@ -48,12 +50,14 @@ class AppTransactionManager {
     int offset,
     String order,
   }) async {
+    await _initDB();
+
     List<Map<String, dynamic>> response = await _db.getRecords(
       where: where,
       whereArgs: whereArgs,
-      // limit: limit,
-      // offset: offset,
-      // order: order,
+      limit: limit,
+      offset: offset,
+      order: order,
     );
 
     List<TransactionRecord> records = [];
