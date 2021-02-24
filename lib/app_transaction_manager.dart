@@ -4,18 +4,16 @@ import 'package:app_storage_kit/app_storage_kit.dart';
 import 'package:app_storage_kit/db_storage.dart';
 import 'package:app_storage_kit/data_models/db_table_model.dart';
 import 'package:app_transaction_manager/data_models/tran_record.dart';
-import 'package:transaction/web3dart.dart';
 
-class AppTransactionManager {
-  DatabaseStorageKit _db;
-  Web3dart web3dart;
+abstract class AppTransactionManager {
+  DatabaseStorageKit db;
+  bool get inited => db != null && db.dbReady;
 
   AppTransactionManager() {
-    web3dart = Web3dart();
-    _initDB();
+    initDB();
   }
 
-  Future<Null> _initDB() async {
+  Future<Null> initDB() async {
     DBTableModel table = DBTableModel(
       tableName: 'transaction_hash',
       fields: [
@@ -26,56 +24,23 @@ class AppTransactionManager {
         TableFieldModel(name: 'confirmTimestamp', type: 'TEXT'),
       ],
     );
-    _db = DatabaseStorageKit(table: table);
-    await _db.initDB();
+    db = DatabaseStorageKit(table: table);
+    await db.initDB();
     return;
   }
 
-  Future<bool> addSentTransaction(String hash) async {
-    await _initDB();
-
-    TransactionRecord r = TransactionRecord(
-      transactionHash: hash,
-      sendTimestamp: DateTime.now().millisecondsSinceEpoch.toString(),
-    );
-
-    await _db.setRecord(r);
-    return true;
-  }
-
-  Future<List<TransactionRecord>> readTransaction({
+  Future<bool> addSentTx(String hash);
+  Future<bool> updateTx(
+    String hash, {
+    dynamic txInfo,
+    dynamic txReceipt,
+    String confirmTimestamp,
+  });
+  Future<List<TransactionRecord>> readTxs({
     String where,
     List<String> whereArgs,
     int limit,
     int offset,
     String order,
-  }) async {
-    await _initDB();
-
-    List<Map<String, dynamic>> response = await _db.getRecords(
-      where: where,
-      whereArgs: whereArgs,
-      limit: limit,
-      offset: offset,
-      order: order,
-    );
-
-    List<TransactionRecord> records = [];
-    for (int i = 0; i < response.length; i++) {
-      var record = TransactionRecord.fromJson(response[i]);
-
-      // await _getTransactionByHash(record.transactionHash);
-
-      records.add(record);
-    }
-
-    return records;
-  }
-
-  Future<dynamic> _getTransactionByHash(String hash) async {
-    TransactionInformation info =
-        await web3dart.mainNetEthClient.getTransactionByHash(hash);
-
-    print(info.toString());
-  }
+  });
 }

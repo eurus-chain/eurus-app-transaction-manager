@@ -1,9 +1,8 @@
-import 'package:app_transaction_manager/data_models/tran_record.dart';
 import 'package:app_transaction_manager_example/logging_client.dart';
+import 'package:app_transaction_manager_example/tx_record_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 
-import 'package:app_transaction_manager/app_transaction_manager.dart';
 import 'package:transaction/web3dart.dart';
 
 void main() {
@@ -16,12 +15,12 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  AppTransactionManager manager;
+  TxRecordHandler manager;
   Web3dart web3dart;
 
   @override
   void initState() {
-    // manager = AppTransactionManager();
+    manager = TxRecordHandler();
     _initWeb3();
 
     super.initState();
@@ -35,26 +34,23 @@ class _MyAppState extends State<MyApp> {
           title: const Text('Plugin example app'),
         ),
         body: Container(
-          child: Column(
-            children: [
-              FlatButton(
-                onPressed: () => dummyFnc(),
-                child: Text('Add record'),
-              ),
-              FlatButton(
-                onPressed: () => _readRecord(),
-                child: Text('Read record'),
-              ),
-            ],
+          child: Center(
+            child: Column(
+              children: [
+                FlatButton(
+                  onPressed: () => _btn1(),
+                  child: Text('Add record'),
+                ),
+                FlatButton(
+                  onPressed: () => _btn2(),
+                  child: Text('Read record'),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
-  }
-
-  void dummyFnc() async {
-    AppTransactionManager().addSentTransaction(
-        '0x908709938c9b93d390a1394f14ab5cd5a2d8e690e7321f7b66a4249954742d7c');
   }
 
   void _initWeb3() async {
@@ -62,25 +58,17 @@ class _MyAppState extends State<MyApp> {
     web3dart
       ..mainNetEthClient = Web3Client(
         'https://rinkeby.infura.io/v3/9e3b26ef3d2c45d2b9ff73cc933bead1',
-        LoggingClient(Client()),
+        // LoggingClient(Client()),
+        Client(),
       );
   }
 
-  void _addRecord() async {
-    await manager.addSentTransaction(
-        '0x908709938c9b93d390a1394f14ab5cd5a2d8e690e7321f7b66a4249954742d7c');
-    await manager.addSentTransaction(
-        '0x4e209ecf94b887e7b6645dd2193094db1e788bcc75acd8695c999d08c3b7c7e0');
-
-    List<dynamic> rs = await manager.readTransaction();
+  void _btn1() async {
+    manager.addSentTx(
+        '0x16b6b6c0f5c9b3285992e8e88a5e2922c82f65df3b02c11ca96c2a596733285a');
   }
 
-  void _readRecord() async {
-    List<TransactionRecord> rs =
-        await AppTransactionManager().readTransaction();
-
-    rs.forEach((e) {
-      print(e.transactionHash);
-    });
+  void _btn2() async {
+    manager.readTxs();
   }
 }
