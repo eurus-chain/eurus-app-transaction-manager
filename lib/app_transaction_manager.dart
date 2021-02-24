@@ -51,9 +51,9 @@ class AppTransactionManager {
     List<Map<String, dynamic>> response = await _db.getRecords(
       where: where,
       whereArgs: whereArgs,
-      limit: limit,
-      offset: offset,
-      order: order,
+      // limit: limit,
+      // offset: offset,
+      // order: order,
     );
 
     List<TransactionRecord> records = [];

@@ -11,9 +11,9 @@ packages:
   app_storage_kit:
     dependency: "direct main"
     description:
-      path: "../app_storage_kit"
-      relative: true
-    source: path
+      name: app_storage_kit
+      url: "https://pub.dartlang.org"
+    source: hosted
     version: "0.0.3"
   async:
     dependency: transitive
