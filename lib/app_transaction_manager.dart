@@ -12,6 +12,7 @@ class AppTransactionManager {
 
   AppTransactionManager() {
     web3dart = Web3dart();
+    _initDB();
   }
 
   Future<Null> _initDB() async {
@@ -19,31 +20,25 @@ class AppTransactionManager {
       tableName: 'transaction_hash',
       fields: [
         TableFieldModel(name: 'transactionHash', type: 'TEXT', isPK: true),
-        TableFieldModel(name: 'blockHash', type: 'TEXT'),
-        TableFieldModel(name: 'blockNumber', type: 'TEXT'),
-        TableFieldModel(name: 'contractAddress', type: 'TEXT'),
-        TableFieldModel(name: 'from', type: 'TEXT'),
-        TableFieldModel(name: 'to', type: 'TEXT'),
-        TableFieldModel(name: 'gas', type: 'TEXT'),
-        TableFieldModel(name: 'gasPrice', type: 'TEXT'),
-        TableFieldModel(name: 'cumulativeGasUsed', type: 'TEXT'),
-        TableFieldModel(name: 'gasUsed', type: 'TEXT'),
-        TableFieldModel(name: 'nonce', type: 'TEXT'),
-        TableFieldModel(name: 'sendDateTime', type: 'TEXT'),
-        TableFieldModel(name: 'confirmDateTime', type: 'TEXT'),
-        TableFieldModel(name: 'status', type: 'TEXT'),
+        TableFieldModel(name: 'txInfo', type: 'TEXT'),
+        TableFieldModel(name: 'txReceipt', type: 'TEXT'),
+        TableFieldModel(name: 'sendTimestamp', type: 'TEXT'),
+        TableFieldModel(name: 'confirmTimestamp', type: 'TEXT'),
       ],
     );
-
     _db = DatabaseStorageKit(table: table);
   }
 
-  Future<bool> addTransaction(TransactionRecord r) async {
-    int response = await _db.setRecord(r);
-  }
+  Future<bool> addSentTransaction(String hash) async {
+    await _initDB();
 
-  Future<void> setTransaction(TransactionRecord r) async {
+    TransactionRecord r = TransactionRecord(
+      transactionHash: hash,
+      sendTimestamp: DateTime.now().millisecondsSinceEpoch.toString(),
+    );
+
     await _db.setRecord(r);
+    return true;
   }
 
   Future<List<TransactionRecord>> readTransaction({
@@ -62,9 +57,13 @@ class AppTransactionManager {
     );
 
     List<TransactionRecord> records = [];
-    response.forEach((val) {
-      records.add(TransactionRecord().fromJson(val));
-    });
+    for (int i = 0; i < response.length; i++) {
+      var record = TransactionRecord.fromJson(response[i]);
+
+      // await _getTransactionByHash(record.transactionHash);
+
+      records.add(record);
+    }
 
     return records;
   }
@@ -72,5 +71,7 @@ class AppTransactionManager {
   Future<dynamic> _getTransactionByHash(String hash) async {
     TransactionInformation info =
         await web3dart.mainNetEthClient.getTransactionByHash(hash);
+
+    print(info.toString());
   }
 }

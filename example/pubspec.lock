@@ -527,7 +527,7 @@ packages:
     source: hosted
     version: "0.3.12-nullsafety.9"
   transaction:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: transaction
       url: "https://pub.dartlang.org"

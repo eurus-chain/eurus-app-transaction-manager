@@ -1,62 +1,38 @@
+import 'dart:convert';
+
 import 'package:app_storage_kit/data_models/db_record.dart';
+import 'package:flutter/material.dart';
+import 'package:transaction/web3dart.dart';
 
 class TransactionRecord extends DBRecord {
   TransactionRecord({
-    this.transactionHash,
-    this.blockHash,
-    this.blockNumber,
-    this.from,
-    this.to,
+    @required this.transactionHash,
+    this.txInfo,
+    this.txReceipt,
+    this.sendTimestamp,
+    this.confirmTimestamp,
   });
 
   final String transactionHash;
-  final String blockHash;
-  final String blockNumber;
-  final String from;
-  final String to;
-  String contractAddress;
-  String gas;
-  String gasPrice;
-  String cumulativeGasUsed;
-  String gasUsed;
-  String nonce;
-  String sendDateTime;
-  String confirmDateTime;
-  String status;
+  TransactionInformation txInfo;
+  TransactionReceipt txReceipt;
+  String sendTimestamp;
+  String confirmTimestamp;
 
   @override
-  TransactionRecord fromJson(Map<String, dynamic> r) => TransactionRecord(
-        transactionHash: r['transactionHash'],
-        blockHash: r['blockHash'],
-        blockNumber: r['blockNumber'],
-        from: r['from'],
-        to: r['to'],
-      )
-        ..contractAddress = r['contractAddress']
-        ..gas = r['gas']
-        ..gasPrice = r['gasPrice']
-        ..cumulativeGasUsed = r['cumulativeGasUsed']
-        ..gasUsed = r['gasUsed']
-        ..nonce = r['nonce']
-        ..sendDateTime = r['sendDateTime']
-        ..confirmDateTime = r['confirmDateTime']
-        ..status = r['status'];
+  TransactionRecord.fromJson(Map<String, dynamic> r)
+      : transactionHash = r['transactionHash'],
+        txInfo = r['txInfo'] != null
+            ? TransactionInformation.fromMap(jsonDecode(r['txInfo']))
+            : null,
+        txReceipt = r['txReceipt'] != null
+            ? TransactionReceipt.fromMap(jsonDecode(r['txReceipt']))
+            : null,
+        sendTimestamp = r['sendTimestamp'],
+        confirmTimestamp = r['confirmTimestamp'];
 
   @override
   Map<String, dynamic> toJson() => {
         'transactionHash': transactionHash,
-        'blockHash': blockHash,
-        'blockNumber': blockNumber,
-        'from': from,
-        'to': to,
-        'contractAddress': contractAddress,
-        'gas': gas,
-        'gasPrice': gasPrice,
-        'cumulativeGasUsed': cumulativeGasUsed,
-        'gasUsed': gasUsed,
-        'nonce': nonce,
-        'sendDateTime': sendDateTime,
-        'confirmDateTime': confirmDateTime,
-        'status': status,
       };
 }

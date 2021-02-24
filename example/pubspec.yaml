@@ -12,6 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
 
+  transaction: ^0.3.4
   app_transaction_manager:
     # When depending on this package from a real application you should use:
     #   app_transaction_manager: ^x.y.z
