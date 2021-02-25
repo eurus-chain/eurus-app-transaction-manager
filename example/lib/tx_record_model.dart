@@ -31,11 +31,14 @@ class TxRecordModel extends TransactionRecord {
         txReceipt = r['txReceipt'] != null
             ? TransactionReceipt.fromMap(jsonDecode(r['txReceipt']))
             : null,
-        decodedInputAmount = double.tryParse(r['decodedInputAmount']) ?? null,
+        decodedInputAmount = r['decodedInputAmount'] != null
+            ? double.tryParse(r['decodedInputAmount'])
+            : null,
         sendTimestamp = r['sendTimestamp'],
         confirmTimestamp = r['confirmTimestamp'],
         txTo = r['txTo'],
-        txFrom = r['txFrom'];
+        txFrom = r['txFrom'],
+        chain = r['chain'];
 
   @override
   Map<String, dynamic> toJson() => {

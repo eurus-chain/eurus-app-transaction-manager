@@ -41,7 +41,7 @@ abstract class AppTransactionManager {
     return;
   }
 
-  Future<bool> addSentTx(String hash, {String chain});
+  Future<bool> addSentTx(dynamic r);
   Future<bool> updateTx(dynamic r);
   Future<List<TransactionRecord>> readTxs({
     String where,

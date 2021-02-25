@@ -6,27 +6,12 @@ class TxRecordHandler extends AppTransactionManager {
   BigInt tokenDecimal;
 
   @override
-  Future<bool> addSentTx(
-    String hash, {
-    String chain,
-    double amount,
-    String txTo,
-    String txFrom,
-  }) async {
+  Future<bool> addSentTx(txRd) async {
     await initDB();
 
-    TxRecordModel r = TxRecordModel(
-      transactionHash: hash,
-      sendTimestamp: DateTime.now().millisecondsSinceEpoch.toString(),
-    )
-      ..chain = chain
-      ..decodedInputAmount = amount
-      ..txTo = txTo
-      ..txFrom = txFrom;
+    txRd..sendTimestamp = DateTime.now().millisecondsSinceEpoch.toString();
 
-    print(r.txTo);
-
-    super.db.setRecord(r);
+    super.db.setRecord(txRd);
     return true;
   }
 
@@ -102,10 +87,10 @@ class TxRecordHandler extends AppTransactionManager {
         : await web3dart.mainNetEthClient.getTransactionReceipt(hash);
   }
 
-  Future<String> getDecodedInputAmount(TransactionInformation txInfo) async {
+  Future<double> getDecodedInputAmount(TransactionInformation txInfo) async {
     if (txInfo.value.getInWei > BigInt.zero) {
       var result = txInfo.value.getInWei / BigInt.from(100000000000000000);
-      return result.toString();
+      return result;
     }
 
     return null;
