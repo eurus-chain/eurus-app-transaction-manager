@@ -9,10 +9,6 @@ abstract class AppTransactionManager {
   DatabaseStorageKit db;
   bool get inited => db != null && db.dbReady;
 
-  AppTransactionManager() {
-    initDB();
-  }
-
   Future<Null> initDB() async {
     DBTableModel table = DBTableModel(
       tableName: 'transaction_hash',
@@ -20,8 +16,24 @@ abstract class AppTransactionManager {
         TableFieldModel(name: 'transactionHash', type: 'TEXT', isPK: true),
         TableFieldModel(name: 'txInfo', type: 'TEXT'),
         TableFieldModel(name: 'txReceipt', type: 'TEXT'),
+        TableFieldModel(name: 'txFrom', type: 'TEXT'),
+        TableFieldModel(name: 'txTo', type: 'TEXT'),
+        TableFieldModel(name: 'txInput', type: 'TEXT'),
+        TableFieldModel(name: 'decodedInputAmount', type: 'TEXT'),
         TableFieldModel(name: 'sendTimestamp', type: 'TEXT'),
         TableFieldModel(name: 'confirmTimestamp', type: 'TEXT'),
+        TableFieldModel(name: 'chain', type: 'TEXT'),
+      ],
+      orgFields: [
+        TableFieldModel(name: 'transactionHash', type: 'TEXT', isPK: true),
+        TableFieldModel(name: 'txInfo', type: 'TEXT'),
+        TableFieldModel(name: 'txReceipt', type: 'TEXT'),
+        // TableFieldModel(name: 'txFrom', type: 'TEXT'),
+        // TableFieldModel(name: 'txTo', type: 'TEXT'),
+        // TableFieldModel(name: 'txInput', type: 'TEXT'),
+        TableFieldModel(name: 'sendTimestamp', type: 'TEXT'),
+        TableFieldModel(name: 'confirmTimestamp', type: 'TEXT'),
+        // TableFieldModel(name: 'chain', type: 'TEXT'),
       ],
     );
     db = DatabaseStorageKit(table: table);
@@ -29,13 +41,8 @@ abstract class AppTransactionManager {
     return;
   }
 
-  Future<bool> addSentTx(String hash);
-  Future<bool> updateTx(
-    String hash, {
-    dynamic txInfo,
-    dynamic txReceipt,
-    String confirmTimestamp,
-  });
+  Future<bool> addSentTx(String hash, {String chain});
+  Future<bool> updateTx(dynamic r);
   Future<List<TransactionRecord>> readTxs({
     String where,
     List<String> whereArgs,

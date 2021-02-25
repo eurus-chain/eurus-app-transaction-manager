@@ -11,8 +11,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  # app_storage_kit: ^0.0.4
-  app_storage_kit: ^0.0.4+1
+  app_storage_kit: ^0.0.5
+  # app_storage_kit: 
+  #   path: ../app_storage_kit
 
 dev_dependencies:
   flutter_test:

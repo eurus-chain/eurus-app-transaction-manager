@@ -3,19 +3,39 @@ import 'package:app_transaction_manager_example/tx_record_model.dart';
 import 'package:transaction/web3dart.dart';
 
 class TxRecordHandler extends AppTransactionManager {
+  BigInt tokenDecimal;
+
   @override
-  Future<bool> addSentTx(String hash) async {
-    if (!super.inited) await initDB();
+  Future<bool> addSentTx(
+    String hash, {
+    String chain,
+    double amount,
+    String txTo,
+    String txFrom,
+  }) async {
+    await initDB();
 
     TxRecordModel r = TxRecordModel(
       transactionHash: hash,
       sendTimestamp: DateTime.now().millisecondsSinceEpoch.toString(),
-    );
+    )
+      ..chain = chain
+      ..decodedInputAmount = amount
+      ..txTo = txTo
+      ..txFrom = txFrom;
+
+    print(r.txTo);
 
     super.db.setRecord(r);
     return true;
   }
 
+  /// Read Trasaction Record from Database
+  ///
+  /// If local record is complete (Have )
+  /// return local record
+  /// If local record is not complete (missing info / receipt)
+  /// Get info using web3 -> update local data -> return data
   @override
   Future<List<TxRecordModel>> readTxs({
     String where,
@@ -24,32 +44,76 @@ class TxRecordHandler extends AppTransactionManager {
     int offset,
     String order,
   }) async {
-    if (!super.inited) await initDB();
+    await initDB();
 
-    List<Map<String, dynamic>> records = await super.db.getRecords();
+    List<Map<String, dynamic>> records = await super.db.getRecords(
+          where: where,
+          whereArgs: whereArgs,
+          offset: offset,
+          order: order,
+        );
+
+    List<TxRecordModel> finalRecords = [];
 
     for (int i = 0; i < records.length; i++) {
-      var rd = TxRecordModel.fromJson(records[i]);
+      final rd = TxRecordModel.fromJson(records[i]);
+      bool updated = false;
 
-      if (rd.txInfo == null) {
-        TransactionInformation info = await _getTxInfo(rd.transactionHash);
+      /// Update txInfo if found null or missing blockhash
+      if (rd.txInfo == null || rd.txInfo?.blockHash == null) {
+        updated = true;
+        rd.txInfo = await getTxInfo(rd.transactionHash, chain: rd.chain);
+
+        rd.decodedInputAmount =
+            await getDecodedInputAmount(rd.txInfo) ?? rd.decodedInputAmount;
       }
+
+      if (rd.txReceipt == null && rd.txInfo.blockHash != null) {
+        updated = true;
+        rd.txReceipt = await getTxReceipt(rd.transactionHash, chain: rd.chain);
+
+        rd.confirmTimestamp = DateTime.now().millisecondsSinceEpoch.toString();
+      }
+
+      if (updated) await updateTx(rd);
+
+      finalRecords.add(rd);
     }
 
-    return [];
+    return finalRecords;
   }
 
   @override
-  Future<bool> updateTx(
-    String hash, {
-    txInfo,
-    txReceipt,
-    String confirmTimestamp,
-  }) {}
+  Future<bool> updateTx(r) async {
+    super.db.setRecord(r);
 
-  Future<TransactionInformation> _getTxInfo(String hash) async {
-    return await web3dart.mainNetEthClient.getTransactionByHash(hash);
+    return true;
   }
 
-  Future<TransactionReceipt> _getTxReceipt(String hash) async {}
+  Future<TransactionInformation> getTxInfo(String hash, {String chain}) async {
+    return chain != 'eth'
+        ? web3dart.eurusEthClient.getTransactionByHash(hash)
+        : await web3dart.mainNetEthClient.getTransactionByHash(hash);
+  }
+
+  Future<TransactionReceipt> getTxReceipt(String hash, {String chain}) async {
+    return chain != 'eth'
+        ? await web3dart.eurusEthClient.getTransactionReceipt(hash)
+        : await web3dart.mainNetEthClient.getTransactionReceipt(hash);
+  }
+
+  Future<String> getDecodedInputAmount(TransactionInformation txInfo) async {
+    if (txInfo.value.getInWei > BigInt.zero) {
+      var result = txInfo.value.getInWei / BigInt.from(100000000000000000);
+      return result.toString();
+    }
+
+    return null;
+  }
+
+  Future<BigInt> getTokenDecimal(String contractAddress) async {
+    tokenDecimal = BigInt.from(1);
+
+    return tokenDecimal;
+  }
 }
