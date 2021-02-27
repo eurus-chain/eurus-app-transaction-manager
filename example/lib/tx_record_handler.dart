@@ -1,9 +1,13 @@
+import 'dart:typed_data';
+
 import 'package:app_transaction_manager/app_transaction_manager.dart';
 import 'package:app_transaction_manager_example/tx_record_model.dart';
 import 'package:transaction/web3dart.dart';
+import 'package:web3dart/crypto.dart';
 
 class TxRecordHandler extends AppTransactionManager {
-  BigInt tokenDecimal;
+  Map<String, int> _ethTokenDecimal = {};
+  Map<String, int> _eunTokenDecimal = {};
 
   @override
   Future<bool> addSentTx(txRd) async {
@@ -49,8 +53,26 @@ class TxRecordHandler extends AppTransactionManager {
         updated = true;
         rd.txInfo = await getTxInfo(rd.transactionHash, chain: rd.chain);
 
-        rd.decodedInputAmount =
-            await getDecodedInputAmount(rd.txInfo) ?? rd.decodedInputAmount;
+        if (rd.txInfo != null) {
+          rd.txFrom = rd.txInfo.from.hex;
+          rd.txTo = rd.txInfo.to.hex;
+          rd.txInput = rd.txInfo.input;
+
+          if (rd.txInfo.input.length > 2) {
+            int decimal = await getTokenDecimal(rd.txInfo.to.hex);
+
+            Map<String, dynamic> decodedVal = decodedInput(
+                rd.txInfo == null ? '' : rd.txInfo.input,
+                decimals: decimal);
+
+            rd.decodedInputFncIdentifierHex = decodedVal['fncIdentifier'];
+            rd.decodedInputRecipientAddress = decodedVal['address'];
+            rd.decodedInputAmount = decodedVal['amount'];
+          } else {
+            rd.decodedInputAmount =
+                getDecodedInputAmount(rd.txInfo.value.getInWei, 18);
+          }
+        }
       }
 
       if (rd.txReceipt == null && rd.txInfo.blockHash != null) {
@@ -75,30 +97,71 @@ class TxRecordHandler extends AppTransactionManager {
     return true;
   }
 
+  /// Get TransactionInformation using web3dart
   Future<TransactionInformation> getTxInfo(String hash, {String chain}) async {
-    return chain != 'eth'
+    return chain == 'eun'
         ? web3dart.eurusEthClient.getTransactionByHash(hash)
         : await web3dart.mainNetEthClient.getTransactionByHash(hash);
   }
 
+  /// Get TransactionReceipt using web3dart
   Future<TransactionReceipt> getTxReceipt(String hash, {String chain}) async {
-    return chain != 'eth'
+    return chain == 'eun'
         ? await web3dart.eurusEthClient.getTransactionReceipt(hash)
         : await web3dart.mainNetEthClient.getTransactionReceipt(hash);
   }
 
-  Future<double> getDecodedInputAmount(TransactionInformation txInfo) async {
-    if (txInfo.value.getInWei > BigInt.zero) {
-      var result = txInfo.value.getInWei / BigInt.from(100000000000000000);
-      return result;
-    }
+  /// Get Token decimal by contract address using web3dart
+  Future<int> getTokenDecimal(String contractAddress, {String chain}) async {
+    int loadedDecimal = chain == 'eun'
+        ? _eunTokenDecimal[contractAddress]
+        : _ethTokenDecimal[contractAddress];
 
-    return null;
+    if (loadedDecimal != null) return loadedDecimal;
+
+    DeployedContract contract = chain == 'eun'
+        ? web3dart.getEurusERC20Contract(contractAddress: contractAddress)
+        : web3dart.getEthereumERC20Contract(contractAddress: contractAddress);
+
+    BigInt decimal = await web3dart.getContractDecimal(
+        deployedContract: contract,
+        blockChainType:
+            chain == 'eun' ? BlockChainType.Eurus : BlockChainType.Ethereum);
+
+    int finalDecimal = decimal.toInt();
+
+    chain == 'eun'
+        ? _eunTokenDecimal.addAll({contractAddress: finalDecimal})
+        : _ethTokenDecimal.addAll({contractAddress: finalDecimal});
+
+    return finalDecimal;
   }
 
-  Future<BigInt> getTokenDecimal(String contractAddress) async {
-    tokenDecimal = BigInt.from(1);
+  double getDecodedInputAmount(BigInt amount, int decimals) {
+    return amount / BigInt.from(10).pow(decimals);
+  }
 
-    return tokenDecimal;
+  @override
+  Map<String, dynamic> decodedInput(Uint8List raw, {int decimals}) {
+    if (raw.length < 3) return null;
+
+    String input = bytesToHex(raw);
+
+    String fncIdentifier = '0x' + input.substring(0, 8);
+
+    String addressRaw = input.substring(10, 72);
+    RegExp exp = new RegExp(r"^0+(.+)$");
+    var matches = exp.allMatches(addressRaw);
+    String address = '0x' + matches.elementAt(0).group(1);
+
+    String amountRaw = input.substring(72, 136);
+    double amountBigInt =
+        hexToInt(amountRaw) / (BigInt.from(10).pow(decimals ?? 0));
+
+    return {
+      'fncIdentifier': fncIdentifier,
+      'address': address,
+      'amount': amountBigInt,
+    };
   }
 }

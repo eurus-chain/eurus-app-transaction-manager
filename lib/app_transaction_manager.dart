@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:app_storage_kit/app_storage_kit.dart';
 import 'package:app_storage_kit/db_storage.dart';
@@ -19,21 +20,12 @@ abstract class AppTransactionManager {
         TableFieldModel(name: 'txFrom', type: 'TEXT'),
         TableFieldModel(name: 'txTo', type: 'TEXT'),
         TableFieldModel(name: 'txInput', type: 'TEXT'),
+        TableFieldModel(name: 'decodedInputFncIdentifierHex', type: 'TEXT'),
+        TableFieldModel(name: 'decodedInputRecipientAddress', type: 'TEXT'),
         TableFieldModel(name: 'decodedInputAmount', type: 'TEXT'),
         TableFieldModel(name: 'sendTimestamp', type: 'TEXT'),
         TableFieldModel(name: 'confirmTimestamp', type: 'TEXT'),
         TableFieldModel(name: 'chain', type: 'TEXT'),
-      ],
-      orgFields: [
-        TableFieldModel(name: 'transactionHash', type: 'TEXT', isPK: true),
-        TableFieldModel(name: 'txInfo', type: 'TEXT'),
-        TableFieldModel(name: 'txReceipt', type: 'TEXT'),
-        // TableFieldModel(name: 'txFrom', type: 'TEXT'),
-        // TableFieldModel(name: 'txTo', type: 'TEXT'),
-        // TableFieldModel(name: 'txInput', type: 'TEXT'),
-        TableFieldModel(name: 'sendTimestamp', type: 'TEXT'),
-        TableFieldModel(name: 'confirmTimestamp', type: 'TEXT'),
-        // TableFieldModel(name: 'chain', type: 'TEXT'),
       ],
     );
     db = DatabaseStorageKit(table: table);
@@ -50,4 +42,5 @@ abstract class AppTransactionManager {
     int offset,
     String order,
   });
+  Map<String, dynamic> decodedInput(Uint8List input, {int decimals});
 }

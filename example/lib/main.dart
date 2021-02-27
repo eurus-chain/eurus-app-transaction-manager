@@ -105,16 +105,17 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _btn2() async {
-    List<TxRecordModel> result = await manager.readTxs(
-      where: "txTo = ?",
-      whereArgs: ['0xbd5d797bd25d0a07578ecab9ed5de2504ae49a40'],
-    );
+    // List<TxRecordModel> result = await manager.readTxs(
+    //   where: "txTo = ?",
+    //   whereArgs: ['0xbd5d797bd25d0a07578ecab9ed5de2504ae49a40'],
+    // );
+    List<TxRecordModel> result = await manager.readTxs();
 
     print('done result: ${result?.length}');
 
     result.forEach((e) {
       print(
-          '${e.transactionHash} ${e.txReceipt.contractAddress?.hex}\n \t${e.txInfo.value.getInWei} Amount: ${e.decodedInputAmount} ${e.sendTimestamp} - ${e.confirmTimestamp}');
+          'vv-llas Amount: ${e.decodedInputAmount}, txFrom: ${e.txFrom} txTo: ${e.txTo}, decodedTo: ${e.decodedInputRecipientAddress}');
     });
   }
 }

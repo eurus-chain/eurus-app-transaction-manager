@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:app_transaction_manager/data_models/tran_record.dart';
 import 'package:transaction/web3dart.dart';
@@ -15,6 +16,9 @@ class TxRecordModel extends TransactionRecord {
   final String transactionHash;
   TransactionInformation txInfo;
   TransactionReceipt txReceipt;
+  Uint8List txInput;
+  String decodedInputFncIdentifierHex;
+  String decodedInputRecipientAddress;
   double decodedInputAmount;
   String txTo;
   String txFrom;
@@ -31,6 +35,9 @@ class TxRecordModel extends TransactionRecord {
         txReceipt = r['txReceipt'] != null
             ? TransactionReceipt.fromMap(jsonDecode(r['txReceipt']))
             : null,
+        txInput = r['txInput'],
+        decodedInputFncIdentifierHex = r['decodedInputFncIdentifierHex'],
+        decodedInputRecipientAddress = r['decodedInputRecipientAddress'],
         decodedInputAmount = r['decodedInputAmount'] != null
             ? double.tryParse(r['decodedInputAmount'])
             : null,
@@ -47,7 +54,9 @@ class TxRecordModel extends TransactionRecord {
         'txReceipt': txReceipt != null ? jsonEncode(txReceiptToMap()) : null,
         'txFrom': txInfo?.from?.hex ?? txFrom,
         'txTo': txInfo?.to?.hex ?? txTo,
-        'txInput': txInfo?.input,
+        'txInput': txInput ?? txInfo?.input,
+        'decodedInputFncIdentifierHex': decodedInputFncIdentifierHex,
+        'decodedInputRecipientAddress': decodedInputRecipientAddress,
         'decodedInputAmount': decodedInputAmount,
         'sendTimestamp': sendTimestamp,
         'confirmTimestamp': confirmTimestamp,
