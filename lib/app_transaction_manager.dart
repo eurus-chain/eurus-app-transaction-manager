@@ -26,6 +26,8 @@ abstract class AppTransactionManager {
         TableFieldModel(name: 'sendTimestamp', type: 'TEXT'),
         TableFieldModel(name: 'confirmTimestamp', type: 'TEXT'),
         TableFieldModel(name: 'chain', type: 'TEXT'),
+        TableFieldModel(name: 'gasPrice', type: 'TEXT'),
+        TableFieldModel(name: 'gasUsed', type: 'TEXT'),
       ],
     );
     db = DatabaseStorageKit(table: table);
