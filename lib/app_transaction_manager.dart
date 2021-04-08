@@ -28,6 +28,7 @@ abstract class AppTransactionManager {
         TableFieldModel(name: 'chain', type: 'TEXT'),
         TableFieldModel(name: 'gasPrice', type: 'TEXT'),
         TableFieldModel(name: 'gasUsed', type: 'TEXT'),
+        TableFieldModel(name: 'eurusTxType', type: 'TEXT'),
       ],
     );
     db = DatabaseStorageKit(table: table);
