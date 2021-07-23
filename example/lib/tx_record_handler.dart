@@ -62,11 +62,12 @@ class TxRecordHandler extends AppTransactionManager {
 
           if (rd.txInfo!.input.length > 2) {
             final toHex = rd.txInfo!.to?.hex ?? '';
-            int? decimal = toHex.isNotEmpty ? await getTokenDecimal(toHex, chain: rd.chain!) : null;
+            int? decimal = toHex.isNotEmpty
+                ? await getTokenDecimal(toHex, chain: rd.chain!)
+                : null;
 
-            Map<String, dynamic> decodedVal = decodedInput(
-                rd.txInfo!.input,
-                decimals: decimal ?? 0);
+            Map<String, dynamic> decodedVal =
+                decodedInput(rd.txInfo!.input, decimals: decimal ?? 0);
 
             rd.decodedInputFncIdentifierHex = decodedVal['fncIdentifier'];
             rd.decodedInputRecipientAddress = decodedVal['address'];
@@ -80,7 +81,9 @@ class TxRecordHandler extends AppTransactionManager {
 
       if (rd.txReceipt == null && rd.txInfo?.blockHash != null) {
         updated = true;
-        rd.txReceipt = rd.chain != null ? await getTxReceipt(rd.transactionHash, chain: rd.chain!) : null;
+        rd.txReceipt = rd.chain != null
+            ? await getTxReceipt(rd.transactionHash, chain: rd.chain!)
+            : null;
 
         rd.confirmTimestamp = DateTime.now().millisecondsSinceEpoch.toString();
       }

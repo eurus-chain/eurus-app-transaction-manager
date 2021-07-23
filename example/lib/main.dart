@@ -36,11 +36,11 @@ class _MyAppState extends State<MyApp> {
           child: Center(
             child: Column(
               children: [
-                FlatButton(
+                TextButton(
                   onPressed: () => _btn1(),
                   child: Text('Add record'),
                 ),
-                FlatButton(
+                TextButton(
                   onPressed: () => _btn2(),
                   child: Text('Read record'),
                 ),

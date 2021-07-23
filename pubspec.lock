@@ -6,7 +6,7 @@ packages:
     description:
       path: "."
       ref: "devemopment/main"
-      resolved-ref: "25542f700c64112560cd253bd620c0c5ed1e6078"
+      resolved-ref: "60d030f1a3bc7aae634dc4cd3a9a2f220f849ab6"
       url: "https://github.com/eurus-chain/eurus-app-storage.git"
     source: git
     version: "0.0.7"

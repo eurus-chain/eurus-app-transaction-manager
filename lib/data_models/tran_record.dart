@@ -1,5 +1,4 @@
 import 'package:app_storage_kit/data_models/db_record.dart';
-import 'package:flutter/material.dart';
 
 abstract class TransactionRecord extends DBRecord {
   TransactionRecord({
