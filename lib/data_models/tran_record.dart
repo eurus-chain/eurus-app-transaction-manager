@@ -3,20 +3,21 @@ import 'package:flutter/material.dart';
 
 abstract class TransactionRecord extends DBRecord {
   TransactionRecord({
-    @required this.transactionHash,
+    required this.transactionHash,
     this.sendTimestamp,
     this.confirmTimestamp,
-  });
+  }) : super(id: null);
 
   final String transactionHash;
-  String sendTimestamp;
-  String confirmTimestamp;
+  String? sendTimestamp;
+  String? confirmTimestamp;
 
   @override
   TransactionRecord.fromJson(Map<String, dynamic> r)
       : transactionHash = r['transactionHash'],
         sendTimestamp = r['sendTimestamp'],
-        confirmTimestamp = r['confirmTimestamp'];
+        confirmTimestamp = r['confirmTimestamp'],
+        super.fromJson(r);
 
   @override
   Map<String, dynamic> toJson() => {

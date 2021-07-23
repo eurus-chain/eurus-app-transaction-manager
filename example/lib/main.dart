@@ -15,12 +15,11 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  TxRecordHandler manager;
-  Web3dart web3dart;
+  TxRecordHandler manager = TxRecordHandler();
+  Web3dart web3dart = Web3dart();
 
   @override
   void initState() {
-    manager = TxRecordHandler();
     _initWeb3();
 
     super.initState();
@@ -54,7 +53,6 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _initWeb3() async {
-    web3dart = Web3dart();
     web3dart
       ..mainNetEthClient = Web3Client(
         'https://rinkeby.infura.io/v3/9e3b26ef3d2c45d2b9ff73cc933bead1',
@@ -111,7 +109,7 @@ class _MyAppState extends State<MyApp> {
     // );
     List<TxRecordModel> result = await manager.readTxs();
 
-    print('done result: ${result?.length}');
+    print('done result: ${result.length}');
 
     result.forEach((e) {
       print(

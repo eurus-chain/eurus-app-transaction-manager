@@ -27,11 +27,11 @@ class TxRecordHandler extends AppTransactionManager {
   /// Get info using web3 -> update local data -> return data
   @override
   Future<List<TxRecordModel>> readTxs({
-    String where,
-    List<String> whereArgs,
-    int limit,
-    int offset,
-    String order,
+    String? where,
+    List<String>? whereArgs,
+    int? limit,
+    int? offset,
+    String? order,
   }) async {
     await initDB();
 
@@ -51,33 +51,36 @@ class TxRecordHandler extends AppTransactionManager {
       /// Update txInfo if found null or missing blockhash
       if (rd.txInfo == null || rd.txInfo?.blockHash == null) {
         updated = true;
-        rd.txInfo = await getTxInfo(rd.transactionHash, chain: rd.chain);
+        rd.txInfo = rd.chain != null
+            ? await getTxInfo(rd.transactionHash, chain: rd.chain!)
+            : null;
 
         if (rd.txInfo != null) {
-          rd.txFrom = rd.txInfo.from.hex;
-          rd.txTo = rd.txInfo.to.hex;
-          rd.txInput = rd.txInfo.input;
+          rd.txFrom = rd.txInfo?.from.hex;
+          rd.txTo = rd.txInfo?.to?.hex;
+          rd.txInput = rd.txInfo?.input;
 
-          if (rd.txInfo.input.length > 2) {
-            int decimal = await getTokenDecimal(rd.txInfo.to.hex);
+          if (rd.txInfo!.input.length > 2) {
+            final toHex = rd.txInfo!.to?.hex ?? '';
+            int? decimal = toHex.isNotEmpty ? await getTokenDecimal(toHex, chain: rd.chain!) : null;
 
             Map<String, dynamic> decodedVal = decodedInput(
-                rd.txInfo == null ? '' : rd.txInfo.input,
-                decimals: decimal);
+                rd.txInfo!.input,
+                decimals: decimal ?? 0);
 
             rd.decodedInputFncIdentifierHex = decodedVal['fncIdentifier'];
             rd.decodedInputRecipientAddress = decodedVal['address'];
             rd.decodedInputAmount = decodedVal['amount'];
           } else {
             rd.decodedInputAmount =
-                getDecodedInputAmount(rd.txInfo.value.getInWei, 18);
+                getDecodedInputAmount(rd.txInfo!.value.getInWei, 18);
           }
         }
       }
 
-      if (rd.txReceipt == null && rd.txInfo.blockHash != null) {
+      if (rd.txReceipt == null && rd.txInfo?.blockHash != null) {
         updated = true;
-        rd.txReceipt = await getTxReceipt(rd.transactionHash, chain: rd.chain);
+        rd.txReceipt = rd.chain != null ? await getTxReceipt(rd.transactionHash, chain: rd.chain!) : null;
 
         rd.confirmTimestamp = DateTime.now().millisecondsSinceEpoch.toString();
       }
@@ -98,22 +101,25 @@ class TxRecordHandler extends AppTransactionManager {
   }
 
   /// Get TransactionInformation using web3dart
-  Future<TransactionInformation> getTxInfo(String hash, {String chain}) async {
+  Future<TransactionInformation> getTxInfo(String hash,
+      {required String chain}) async {
     return chain == 'eun'
-        ? web3dart.eurusEthClient.getTransactionByHash(hash)
+        ? await web3dart.eurusEthClient.getTransactionByHash(hash)
         : await web3dart.mainNetEthClient.getTransactionByHash(hash);
   }
 
   /// Get TransactionReceipt using web3dart
-  Future<TransactionReceipt> getTxReceipt(String hash, {String chain}) async {
+  Future<TransactionReceipt?> getTxReceipt(String hash,
+      {required String chain}) async {
     return chain == 'eun'
         ? await web3dart.eurusEthClient.getTransactionReceipt(hash)
         : await web3dart.mainNetEthClient.getTransactionReceipt(hash);
   }
 
   /// Get Token decimal by contract address using web3dart
-  Future<int> getTokenDecimal(String contractAddress, {String chain}) async {
-    int loadedDecimal = chain == 'eun'
+  Future<int> getTokenDecimal(String contractAddress,
+      {required String chain}) async {
+    int? loadedDecimal = chain == 'eun'
         ? _eunTokenDecimal[contractAddress]
         : _ethTokenDecimal[contractAddress];
 
@@ -142,8 +148,8 @@ class TxRecordHandler extends AppTransactionManager {
   }
 
   @override
-  Map<String, dynamic> decodedInput(Uint8List raw, {int decimals}) {
-    if (raw.length < 3) return null;
+  Map<String, dynamic> decodedInput(Uint8List raw, {int decimals = 0}) {
+    if (raw.length < 3) return Map<String, dynamic>();
 
     String input = bytesToHex(raw);
 
@@ -152,11 +158,14 @@ class TxRecordHandler extends AppTransactionManager {
     String addressRaw = input.substring(10, 72);
     RegExp exp = new RegExp(r"^0+(.+)$");
     var matches = exp.allMatches(addressRaw);
-    String address = '0x' + matches.elementAt(0).group(1);
+
+    if ((matches.elementAt(0).group(1) ?? '').isEmpty)
+      return Map<String, dynamic>();
+
+    String address = '0x' + matches.elementAt(0).group(1)!;
 
     String amountRaw = input.substring(72, 136);
-    double amountBigInt =
-        hexToInt(amountRaw) / (BigInt.from(10).pow(decimals ?? 0));
+    double amountBigInt = hexToInt(amountRaw) / (BigInt.from(10).pow(decimals));
 
     return {
       'fncIdentifier': fncIdentifier,

@@ -5,13 +5,15 @@ author:
 homepage:
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
-  flutter: ">=1.20.0"
+  sdk: ">=2.12.0 <3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  app_storage_kit: ^0.0.6
+  app_storage_kit:
+    git:
+      url: https://github.com/eurus-chain/eurus-app-storage.git
+      ref: devemopment/main
 
 dev_dependencies:
   flutter_test:

@@ -7,8 +7,8 @@ import 'package:app_storage_kit/data_models/db_table_model.dart';
 import 'package:app_transaction_manager/data_models/tran_record.dart';
 
 abstract class AppTransactionManager {
-  DatabaseStorageKit db;
-  bool get inited => db != null && db.dbReady;
+  late DatabaseStorageKit db;
+  bool get inited => db.dbReady;
 
   Future<Null> initDB() async {
     DBTableModel table = DBTableModel(
