@@ -15,7 +15,7 @@ dependencies:
   transaction:
     git:
       url: git@github.com:eurus-chain/eurus-app-transaction.git
-      ref: 777fcff65473b15fb3bf741759e43d06c8ca748b
+      ref: main
   app_transaction_manager:
     # When depending on this package from a real application you should use:
     #   app_transaction_manager: ^x.y.z
