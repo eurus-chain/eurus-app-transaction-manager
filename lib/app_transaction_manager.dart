@@ -2,8 +2,6 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:app_storage_kit/app_storage_kit.dart';
-import 'package:app_storage_kit/db_storage.dart';
-import 'package:app_storage_kit/data_models/db_table_model.dart';
 import 'package:app_transaction_manager/data_models/tran_record.dart';
 
 abstract class AppTransactionManager {
